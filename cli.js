@@ -11,6 +11,7 @@ const CHANGE_LOG = 'changelog.md';
 const fs = require('fs');
 const path = require('path');
 const cp = require('child_process');
+const ih = require('install-here');
 const _ = require('lodash');
 const u = require('./util.js');
 const rimraf = require('rimraf');
