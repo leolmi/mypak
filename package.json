@@ -1,0 +1,40 @@
+{
+  "name": "mypak",
+  "version": "1.0.0",
+  "description": "My packages...",
+  "homepage": "https://github.com/leolmi/mypak",
+  "license": "MIT",
+  "main": "cli.js",
+  "preferGlobal": true,
+  "bin": {
+    "mymo": "cli.js"
+  },
+  "keywords": [
+    "install",
+    "package",
+    "local",
+    "node",
+    "util"
+  ],
+  "author": {
+    "name": "Leonardo Olmi <leo.olmi@gmail.com>",
+    "email": "leo.olmi@gmail.com",
+    "url": "http://..."
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/leolmi/mypak.git"
+  },
+  "files": [
+    "cli.js",
+    "util.js"
+  ],
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "dependencies": {
+    "lodash": "^4.17.4",
+    "rimraf": "^2.6.0",
+    "yargs": "^7.0.1"
+  }
+}
