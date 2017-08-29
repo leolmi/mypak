@@ -138,3 +138,41 @@ exports.checkPackage = function(cb) {
   if (_state.ih.options.debug) ihc.log(null, 'package: ' + JSON.stringify(_state.ih.package));
   cb();
 };
+
+exports.execPre = function(ih) {
+  return function(cb) {
+    if (_state.ih.options.info) return cb();
+    ih.execPre(cb);
+  }
+};
+
+exports.checkInfo = function(cb) {
+  if (_state.ih.isExit()) return cb();
+  const fn_config = path.join(_state.ih.temp, _state.ih.package.name, _constants.MYPAK_CONFIG);
+  if (fs.existsSync(fn_config)) _state.pak = require(fn_config);
+
+  if (_state.ih.options.info) {
+    var info = '';
+    const fn_config = path.join(_state.ih.temp, _state.ih.package.name, _constants.MYPAK_CONFIG);
+    if (_state.pak) {
+      info += (_state.pak.desc||'')+'\n'+JSON.stringify(_state.pak.types|[]);
+    } else {
+      info += 'Cannot retrieve mypak infos';
+    }
+    const fn_package = path.join(_state.ih.temp, _state.ih.package.name, ihc.constants.PACKAGE_CONFIG);
+    if (_state.ih.options.verbose && fs.existsSync(fn_package)) {
+      const pkg_json = require(fn_package);
+      info += '\n'+JSON.stringify(pkg_json, null, 2);
+    }
+    _state.ih.exit = ['%s v.%s \n\n%s', _state.ih.package.name, _state.ih.package.version, info];
+  }
+  cb();
+};
+
+exports.checkPak = function(cb) {
+  if (_state.ih.isExit()) return cb();
+  if (_state.pak) {
+    ihc.constants.GIT_IGNORE = _state.pak.gitignore || ihc.constants.GIT_IGNORE;
+  }
+  cb();
+};

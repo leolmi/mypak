@@ -22,15 +22,6 @@ const angular1 = {
   }
 };
 
-
-
 exports.replacers = {
   angular1: angular1
 };
-
-//TODO leggere le info:
-// usa nella temp:
-// $ npm pack <package>[@<version>]
-// per scaricare in locale il tar
-// apre il tar e legge il file richiesto
-// elimina la temp

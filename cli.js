@@ -16,18 +16,19 @@ u.compose()
   .use(ih.checkTest)
   .use(ih.deleteTempPath)
   .use(ih.createTempPath)
-  .use(ih.execPre)
+  .use(mp.execPre(ih))
   .use(ih.install)
+  .use(mp.checkInfo)
+  .use(mp.checkPak)
   .use(ih.delete)
   .use(ih.replace)
   .use(ih.replaceDep)
   .use(ih.deleteTempPath)
+  .use(ih.checkGitIgnore)
   .use(ih.saveSettings)
   .use(ih.execPost)
   .run(ih.report);
 
 
-
 // mypack                                 >>>     aggiorna il package
-
 // mypack mpk-sections-site --name rds    >>>     installa il package con il nome
