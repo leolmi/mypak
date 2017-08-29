@@ -4,9 +4,10 @@ const _ = require('lodash');
 const fs = require('fs');
 const path = require('path');
 const u = require('./util.js');
+const info = require('./package.json');
 const ihc = require('install-here/core');
 const ihu = require('install-here/util');
-const info = require('./package.json');
+
 
 const _constants = {
   MYPAK_CONFIG: info.name+'.json'
@@ -23,42 +24,49 @@ const _state = {
   }
 };
 
+function _log(m, m1) {
+  if (_state.ih.options.verbose||_state.ih.options.debug) {
+    console.log(m);
+  } else if (m1) {
+    console.log(m1);
+  }
+}
+
 // gestisce le modifiche al package.json
 function _managePkg(xdata, ndata) {
   try {
     var xpkg = JSON.parse(xdata);
     var npkg = JSON.parse(ndata);
     ihc.managePkg(npkg, xpkg);
-    // aggiorna i dati dei settings
-    _state.ih.settings.version = npkg.version;
-    _state.ih.settings.name = npkg.name;
     xdata = JSON.stringify(xpkg, null, 2);
   } catch(err){
     console.error(err);
   }
-
   return xdata;
 }
 
 function _manageFile(data, file) {
   const type = path.extname(file||'').slice(1).toLowerCase();
   const types = (_state.ih.settings.types||'').split(',');
-  _.keys(u.replacers, function(k) {
-    if ((!types.length || types.indexOf(k)>-1) && _.isFunction(u.replacers[k][type]))
-      data = u.replacers[k][type](data, _state);
+  _.keys(u.replacers).forEach(function(k) {
+    if ((!types.length || types.indexOf(k)>-1) && _.isFunction(u.replacers[k][type])) {
+      if (_.isFunction(data.toString))
+        data = u.replacers[k][type](data.toString(), _state);
+    }
   });
   return data;
 }
 
 exports.init = function(a, ih) {
   return function(cb) {
+    ih.init(a)();
+    ih.state.managePkg = _managePkg;
+    ih.state.manageFile = _manageFile;
     _state.ih = ih.state;
     _state.ih.config = _constants.MYPAK_CONFIG;
-    _state.ih.managePkg = _managePkg;
-    _state.ih.manageFile = _manageFile;
-    ih.init(a)();
     _state.ih.options.info = !!(a.i||a.info);
     _state.ih.options.pack = true;
+    _state.ih.options.forceSts = true;
     _state.ih.settings.appname = _state.ih.settings.appname||a.n||a.name||a.appname||a.ngname;
     cb();
   }
@@ -107,6 +115,7 @@ exports.checkPackage = function(cb) {
   if (_state.ih.isExit()) return cb();
   var pakroot = path.join(_state.ih.root, _constants.MYPAK_CONFIG);
   var pak = (fs.existsSync(pakroot)) ? require(pakroot) : null;
+  _state.ih.options.skipXPost = !pak;
 
   if (!_state.ih.package.name) {
     // se non viene passato il nome esplicitamente e non è una patch
@@ -135,7 +144,7 @@ exports.checkPackage = function(cb) {
   } else {
     _state.ih.relpath = path.join(ihc.constants.INSTALL_HERE_FOLDER, ihc.constants.NODE_MODULES_FOLDER, _state.ih.package.name);
   }
-  if (_state.ih.options.debug) ihc.log(null, 'package: ' + JSON.stringify(_state.ih.package));
+  if (_state.ih.options.debug) _log(null, 'package: ' + JSON.stringify(_state.ih.package));
   cb();
 };
 
@@ -173,6 +182,28 @@ exports.checkPak = function(cb) {
   if (_state.ih.isExit()) return cb();
   if (_state.pak) {
     ihc.constants.GIT_IGNORE = _state.pak.gitignore || ihc.constants.GIT_IGNORE;
+    _.extend(_state.ih.settings, _state.pak);
   }
   cb();
+};
+
+exports.checkPackageJson = function(cb) {
+  if (_state.ih.isExit()) return cb();
+
+  const fn_package = path.join(_state.ih.temp, _state.ih.package.name, ihc.constants.PACKAGE_CONFIG);
+  if (fs.existsSync(fn_package)) _state.pkg = require(fn_package);
+  // aggiorna i dati dei settings
+  if (_state.pkg) {
+    _state.ih.settings.version = _state.pkg.version;
+    _state.ih.settings.name = _state.pkg.name;
+    _log('SETTINGS: '+JSON.stringify(_state.ih.settings, null, 2));
+  }
+  cb();
+};
+
+exports.execPost = function(ih) {
+  return function (cb) {
+    if (!!_state.ih.options.skipXPost) return cb();
+    ih.execPost(cb);
+  }
 };

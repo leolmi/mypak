@@ -11,13 +11,15 @@ exports.isFile = function(f, ext) {
 
 const angular1 = {
   js: function(data, state) {
-    if (state.ih.settings.appname)
-      data = data.replace(/angular.module\(['"].*['"]\)/gi,'angular.module(\''+state.ih.settings.appname+'\')');
+    if (state.ih.settings.appname) {
+      data = data.replace(/angular.module\(['"].*['"]/gi, 'angular.module(\'' + state.ih.settings.appname + '\'');
+    }
     return data;
   },
   html: function(data, state) {
-    if (state.ih.settings.appname)
-      data = data.replace(/ng-app=".*"/gi,'ng-app="'+state.ih.settings.appname+'"');
+    if (state.ih.settings.appname) {
+      data = data.replace(/ng-app=".*"/gi, 'ng-app="' + state.ih.settings.appname + '"');
+    }
     return data;
   }
 };

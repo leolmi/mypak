@@ -20,13 +20,14 @@ u.compose()
   .use(ih.install)
   .use(mp.checkInfo)
   .use(mp.checkPak)
+  .use(mp.checkPackageJson)
   .use(ih.delete)
   .use(ih.replace)
   .use(ih.replaceDep)
   .use(ih.deleteTempPath)
   .use(ih.checkGitIgnore)
   .use(ih.saveSettings)
-  .use(ih.execPost)
+  .use(mp.execPost(ih))
   .run(ih.report);
 
 
