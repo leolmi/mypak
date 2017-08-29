@@ -27,6 +27,7 @@
   },
   "files": [
     "cli.js",
+    "core.js",
     "util.js"
   ],
   "engines": {
@@ -34,7 +35,6 @@
   },
   "dependencies": {
     "lodash": "^4.17.4",
-    "rimraf": "^2.6.0",
     "yargs": "^7.0.1",
     "install-here": "^1.1.0"
   }
