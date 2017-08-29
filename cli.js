@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 'use strict';
 
-const ih = require('install-here');
+const u = require('install-here/util');
+const ih = require('install-here/core');
 const mp = require('./core.js');
 const a = require('yargs').argv;
 
-ih.compose()
+u.compose()
   .use(mp.init(a, ih))
   .use(mp.checkMyPak)
   .use(mp.checkOptions)

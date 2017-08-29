@@ -4,7 +4,8 @@ const _ = require('lodash');
 const fs = require('fs');
 const path = require('path');
 const u = require('./util.js');
-const ihu = require('install-here');
+const ihc = require('install-here/core');
+const ihu = require('install-here/util');
 const info = require('./package.json');
 
 const _constants = {
@@ -27,7 +28,7 @@ function _managePkg(xdata, ndata) {
   try {
     var xpkg = JSON.parse(xdata);
     var npkg = JSON.parse(ndata);
-    ihu.managePkg(npkg, xpkg);
+    ihc.managePkg(npkg, xpkg);
     // aggiorna i dati dei settings
     _state.ih.settings.version = npkg.version;
     _state.ih.settings.name = npkg.name;
@@ -56,6 +57,8 @@ exports.init = function(a, ih) {
     _state.ih.managePkg = _managePkg;
     _state.ih.manageFile = _manageFile;
     ih.init(a)();
+    _state.ih.options.info = !!(a.i||a.info);
+    _state.ih.options.pack = true;
     _state.ih.settings.appname = _state.ih.settings.appname||a.n||a.name||a.appname||a.ngname;
     cb();
   }
@@ -112,16 +115,16 @@ exports.checkPackage = function(cb) {
       _state.ih.package.name = pak.name;
       _state.ih.package.xversion = ihu.version(pak.version);
     }
-  } else if (pak && !_state.options.patch) {
+  } else if (pak && !_state.ih.options.patch) {
     // se il nome del package è stato passato ed esiste già una definizione e non è una patch
     if (pak.name == _state.ih.package.name) {
       //recupera la versione corrente
-      _state.ih.package.xversion = u.version(pak.version);
+      _state.ih.package.xversion = ihu.version(pak.version);
     } else {
       _state.ih.error = 'Other package not allowed (current: "' + pak.name +
         '")\n\tuse --patch option to merging with other package!';
     }
-  } else if (!pak && _state.options.patch) {
+  } else if (!pak && _state.ih.options.patch) {
     // se non esiste definizione ed è una patch
     _state.ih.error = 'Nothing to patch!\n\tinstall base package before.';
   }
@@ -130,8 +133,8 @@ exports.checkPackage = function(cb) {
   if (!_state.ih.package.name) {
     _state.ih.error = 'Undefined package!\n\tuse: ' + info.name + ' <package> [<options>]';
   } else {
-    _state.ih.relpath = path.join(ihu.constants.INSTALL_HERE_FOLDER, ihu.constants.NODE_MODULES_FOLDER, _state.ih.package.name);
+    _state.ih.relpath = path.join(ihc.constants.INSTALL_HERE_FOLDER, ihc.constants.NODE_MODULES_FOLDER, _state.ih.package.name);
   }
-  if (_state.ih.options.debug) ihu.log(null, 'package: ' + JSON.stringify(_state.ih.package));
+  if (_state.ih.options.debug) ihc.log(null, 'package: ' + JSON.stringify(_state.ih.package));
   cb();
 };

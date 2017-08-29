@@ -7,7 +7,7 @@
   "main": "cli.js",
   "preferGlobal": true,
   "bin": {
-    "mymo": "cli.js"
+    "mypak": "cli.js"
   },
   "keywords": [
     "install",
