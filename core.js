@@ -45,13 +45,14 @@ function _managePkg(xdata, ndata) {
   return xdata;
 }
 
-function _manageFile(data, file) {
+function _manageFile(data, file, exists) {
   const type = path.extname(file||'').slice(1).toLowerCase();
   const types = (_state.ih.settings.types||'').split(',');
   _.keys(u.replacers).forEach(function(k) {
     if ((!types.length || types.indexOf(k)>-1) && _.isFunction(u.replacers[k][type])) {
-      if (_.isFunction(data.toString))
-        data = u.replacers[k][type](data.toString(), _state);
+      if (data && _.isFunction(data.toString)) {
+        data = u.replacers[k][type](data.toString(), _state, exists);
+      }
     }
   });
   return data;
