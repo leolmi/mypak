@@ -24,11 +24,10 @@ const _state = {
   }
 };
 
-function _log(m, m1) {
+function _log() {
   if (_state.ih.options.verbose||_state.ih.options.debug) {
-    console.log(m);
-  } else if (m1) {
-    console.log(m1);
+    const args = Array.prototype.slice.call(arguments);
+    console.log.apply(null, args);
   }
 }
 
@@ -47,12 +46,13 @@ function _managePkg(xdata, ndata) {
 
 function _manageFile(data, file, exists) {
   const type = path.extname(file||'').slice(1).toLowerCase();
-  const types = (_state.ih.settings.types||'').split(',');
+  const types = (_state.ih.settings.types||'').split(',')||[];
+  types.unshift('base');
   _.keys(u.replacers).forEach(function(k) {
-    if ((!types.length || types.indexOf(k)>-1) && _.isFunction(u.replacers[k][type])) {
-      if (data && _.isFunction(data.toString)) {
-        data = u.replacers[k][type](data.toString(), _state, exists);
-      }
+    if (types.indexOf(k) > -1 && _.isFunction(u.replacers[k][type]) && data && _.isFunction(data.toString)) {
+      data = u.replacers[k][type](data.toString(), _state, exists);
+    } else if (exists) {
+      data = null;
     }
   });
   return data;
@@ -60,11 +60,11 @@ function _manageFile(data, file, exists) {
 
 exports.init = function(a, ih) {
   return function(cb) {
+    _state.ih = ih.state;
+    _state.ih.config = _constants.MYPAK_CONFIG;
     ih.init(a)();
     ih.state.managePkg = _managePkg;
     ih.state.manageFile = _manageFile;
-    _state.ih = ih.state;
-    _state.ih.config = _constants.MYPAK_CONFIG;
     _state.ih.options.info = !!(a.i||a.info);
     _state.ih.options.pack = true;
     _state.ih.options.forceSts = true;
@@ -145,7 +145,7 @@ exports.checkPackage = function(cb) {
   } else {
     _state.ih.relpath = path.join(ihc.constants.INSTALL_HERE_FOLDER, ihc.constants.NODE_MODULES_FOLDER, _state.ih.package.name);
   }
-  if (_state.ih.options.debug) _log(null, 'package: ' + JSON.stringify(_state.ih.package));
+  _log('package: %s', JSON.stringify(_state.ih.package));
   cb();
 };
 
@@ -183,7 +183,8 @@ exports.checkPak = function(cb) {
   if (_state.ih.isExit()) return cb();
   if (_state.pak) {
     ihc.constants.GIT_IGNORE = _state.pak.gitignore || ihc.constants.GIT_IGNORE;
-    _.extend(_state.ih.settings, _state.pak);
+    if (!_state.ih.settings.name)
+      _.extend(_state.ih.settings, _state.pak);
   }
   cb();
 };
@@ -197,7 +198,7 @@ exports.checkPackageJson = function(cb) {
   if (_state.pkg) {
     _state.ih.settings.version = _state.pkg.version;
     _state.ih.settings.name = _state.pkg.name;
-    _log('SETTINGS: '+JSON.stringify(_state.ih.settings, null, 2));
+    _log('SETTINGS: %s', JSON.stringify(_state.ih.settings, null, 2));
   }
   cb();
 };
